@@ -4,105 +4,49 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>מחולל שתי אותיות בעברית</title>
+
   <style>
-    :root {
-      --bg1: #f8fafc;
-      --bg2: #e2e8f0;
-      --text: #0f172a;
-      --panel: rgba(255, 255, 255, 0.72);
-      --shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
-    }
-
-    * { box-sizing: border-box; }
-
-    html, body {
+    body {
       margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: "Noto Sans Hebrew", "Arial", sans-serif;
-      background:
-        radial-gradient(circle at top, #ffffff 0%, var(--bg1) 38%, var(--bg2) 100%);
-      color: var(--text);
-    }
-
-    body { display: grid; place-items: center; }
-
-    .wrap {
-      width: min(96vw, 1200px);
-      height: min(92vh, 900px);
+      height: 100vh;
       display: grid;
       place-items: center;
-      padding: 2rem;
+      font-family: Arial;
+      background: #f3f4f6;
     }
 
     .stage {
-      width: min(90vw, 1000px);
-      height: min(80vh, 700px);
+      width: min(70vw, 700px);
+      height: min(60vh, 500px);
       display: grid;
       place-items: center;
-      border-radius: 32px;
-      background: var(--panel);
-      backdrop-filter: blur(8px);
-      box-shadow: var(--shadow);
-      user-select: none;
+      border-radius: 30px;
+      background: white;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
       position: relative;
     }
 
     .word {
-      font-size: clamp(8rem, 28vw, 20rem);
-      font-weight: 700;
-      line-height: 1;
-      letter-spacing: 0.03em;
-      text-align: center;
-      white-space: nowrap;
-      min-height: 1.2em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-size: clamp(8rem, 32vw, 22rem);
       cursor: pointer;
-    }
-
-    .controls {
-      position: absolute;
-      top: 1rem;
-      width: 100%;
-      text-align: center;
     }
 
     .toggle {
-      border: none;
-      border-radius: 999px;
-      padding: 0.6rem 1rem;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .hint {
       position: absolute;
-      bottom: 1rem;
-      width: 100%;
-      text-align: center;
-      font-size: 0.9rem;
-      opacity: 0.7;
+      top: 10px;
     }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <section class="stage">
-      <div class="controls">
-        <button id="toggle" class="toggle">מילים אמיתיות: כבוי</button>
-      </div>
-      <div id="word" class="word">אב</div>
-      <div class="hint">לחיצה על המילה מקריאה. לחיצה מחוץ לריבוע מגרילה.</div>
-    </section>
-  </main>
+
+<div class="stage">
+  <button id="toggle" class="toggle">מילים אמיתיות: כבוי</button>
+  <div id="word" class="word">אב</div>
+</div>
 
 <script>
 const letters = ["א","ב","ג","ד","ה","ו","ז","ח","ט","י","כ","ל","מ","נ","ס","ע","פ","צ","ק","ר","ש","ת"];
 const finals = { "כ":"ך","מ":"ם","נ":"ן","פ":"ף","צ":"ץ" };
-
 const niqqud = ["\u05B8","\u05B7","\u05B5","\u05B6","\u05B9"];
 
 const realWords = ["אָב","אֵם","אַח","אֵל","בֵּן","בַּת","גַּג","דָּג","יָד","לֵב","כַּף","פֶּה"];
@@ -111,6 +55,7 @@ let realMode = false;
 
 const wordEl = document.getElementById("word");
 const toggle = document.getElementById("toggle");
+const stage = document.querySelector(".stage");
 
 function rand(arr){ return arr[Math.floor(Math.random()*arr.length)] }
 
@@ -134,10 +79,14 @@ function speak(){
 
 wordEl.onclick = (e)=>{ e.stopPropagation(); speak(); };
 
+stage.onclick = (e)=>{
+  if(e.target === toggle || toggle.contains(e.target)) return;
+  speak();
+};
+
 document.body.onclick = (e)=>{
-  if(!document.querySelector(".stage").contains(e.target)){
-    gen();
-  }
+  if(stage.contains(e.target)) return;
+  gen();
 };
 
 toggle.onclick = (e)=>{
@@ -154,5 +103,6 @@ window.onkeydown = (e)=>{
 
 gen();
 </script>
+
 </body>
 </html>
