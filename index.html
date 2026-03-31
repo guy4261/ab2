@@ -2,107 +2,347 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>מחולל שתי אותיות בעברית</title>
-
   <style>
-    body {
+    :root {
+      --bg1: #f8fafc;
+      --bg2: #e2e8f0;
+      --text: #0f172a;
+      --panel: rgba(255, 255, 255, 0.78);
+      --shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+      --btn-bg: rgba(15, 23, 42, 0.08);
+      --btn-bg-hover: rgba(15, 23, 42, 0.12);
+      --btn-active: rgba(15, 23, 42, 0.92);
+      --btn-active-text: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
       margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top, #ffffff 0%, var(--bg1) 40%, var(--bg2) 100%);
+      color: var(--text);
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      font-family: Arial, "Noto Sans Hebrew", sans-serif;
+    }
+
+    .wrap {
+      width: 100vw;
       height: 100vh;
       display: grid;
       place-items: center;
-      font-family: Arial;
-      background: #f3f4f6;
+      padding:
+        max(1rem, env(safe-area-inset-top))
+        max(1rem, env(safe-area-inset-right))
+        max(1rem, env(safe-area-inset-bottom))
+        max(1rem, env(safe-area-inset-left));
     }
 
     .stage {
-      width: min(70vw, 700px);
-      height: min(60vh, 500px);
+      width: min(68vw, 680px);
+      height: min(56vh, 460px);
       display: grid;
       place-items: center;
       border-radius: 30px;
-      background: white;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+      background: var(--panel);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: var(--shadow);
+      user-select: none;
       position: relative;
     }
 
-    .word {
-      font-size: clamp(8rem, 32vw, 22rem);
+    .controls {
+      position: absolute;
+      top: 0.9rem;
+      inset-inline: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      z-index: 3;
+    }
+
+    .control-group {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .toggle,
+    .icon-button {
+      border: none;
+      border-radius: 999px;
+      background: var(--btn-bg);
+      color: var(--text);
       cursor: pointer;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      transition: transform 0.15s ease, background 0.15s ease;
+      font: inherit;
+      font-weight: 700;
+    }
+
+    .toggle:hover,
+    .icon-button:hover {
+      transform: translateY(-1px);
+      background: var(--btn-bg-hover);
     }
 
     .toggle {
+      padding: 0.8rem 1rem;
+      font-size: clamp(0.95rem, 1.4vw, 1.05rem);
+      white-space: nowrap;
+    }
+
+    .toggle[aria-pressed="true"] {
+      background: var(--btn-active);
+      color: var(--btn-active-text);
+    }
+
+    .icon-button {
+      width: 3rem;
+      height: 3rem;
+      font-size: 1.35rem;
+      display: grid;
+      place-items: center;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+
+    .word {
+      width: 100%;
+      height: 100%;
+      padding-top: 2.8rem;
+      padding-bottom: 2.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(8rem, 32vw, 22rem);
+      font-weight: 700;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .hint {
       position: absolute;
-      top: 10px;
+      bottom: 1rem;
+      inset-inline: 1rem;
+      text-align: center;
+      font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+      opacity: 0.72;
+      z-index: 3;
+    }
+
+    @media (max-width: 700px) {
+      .stage {
+        width: min(64vw, 560px);
+        height: min(48vh, 360px);
+      }
+
+      .word {
+        font-size: clamp(7rem, 30vw, 12rem);
+        padding-top: 2.8rem;
+        padding-bottom: 2rem;
+      }
+
+      .controls {
+        inset-inline: 0.7rem;
+        top: 0.7rem;
+      }
+
+      .toggle {
+        padding: 0.72rem 0.9rem;
+        font-size: 0.95rem;
+      }
+
+      .icon-button {
+        width: 2.8rem;
+        height: 2.8rem;
+      }
+
+      .hint {
+        font-size: 0.92rem;
+        bottom: 0.8rem;
+      }
     }
   </style>
 </head>
 <body>
+  <main class="wrap">
+    <section class="stage" aria-label="מחולל אותיות">
+      <div class="controls">
+        <div class="control-group">
+          <button id="fontButton" class="icon-button" type="button" title="החלפת פונט" aria-label="החלפת פונט">𝑭</button>
+        </div>
+        <div class="control-group">
+          <button id="toggle" class="toggle" type="button" aria-pressed="false">מילים אמיתיות: כבוי</button>
+        </div>
+      </div>
 
-<div class="stage">
-  <button id="toggle" class="toggle">מילים אמיתיות: כבוי</button>
-  <div id="word" class="word">אב</div>
-</div>
+      <div id="word" class="word" aria-live="polite">אָב</div>
 
-<script>
-const letters = ["א","ב","ג","ד","ה","ו","ז","ח","ט","י","כ","ל","מ","נ","ס","ע","פ","צ","ק","ר","ש","ת"];
-const finals = { "כ":"ך","מ":"ם","נ":"ן","פ":"ף","צ":"ץ" };
-const niqqud = ["\u05B8","\u05B7","\u05B5","\u05B6","\u05B9"];
+      <div class="hint">
+        לחיצה על המילה או בתוך הריבוע מקריאה. לחיצה מחוץ לריבוע מגרילה. Enter מקריא. כפתור הפונט מחליף בין פונטים.
+      </div>
+    </section>
+  </main>
 
-const realWords = ["אָב","אֵם","אַח","אֵל","בֵּן","בַּת","גַּג","דָּג","יָד","לֵב","כַּף","פֶּה"];
+  <script>
+    const letters = ["א","ב","ג","ד","ה","ו","ז","ח","ט","י","כ","ל","מ","נ","ס","ע","פ","צ","ק","ר","ש","ת"];
+    const finals = { "כ":"ך","מ":"ם","נ":"ן","פ":"ף","צ":"ץ" };
 
-let realMode = false;
+    const niqqudOptions = [
+      { type: "mark", value: "\u05B8" },
+      { type: "mark", value: "\u05B7" },
+      { type: "mark", value: "\u05B5" },
+      { type: "mark", value: "\u05B6" },
+      { type: "shuruk", value: "\u05BC" },
+      { type: "holam", value: "\u05B9" }
+    ];
 
-const wordEl = document.getElementById("word");
-const toggle = document.getElementById("toggle");
-const stage = document.querySelector(".stage");
+    const realWords = [
+      "אָב", "אֵם", "אַח", "אִם", "אֵל",
+      "בַּד", "בֵּן", "בַּת",
+      "גַּג", "גֵּר", "גַּן",
+      "דָּג", "דַּם", "דֹּב",
+      "הַר", "הֵד",
+      "וַד",
+      "זָר", "זֵר",
+      "חַג", "חֵץ",
+      "טַל",
+      "יָד", "יָם",
+      "כַּף", "כֵּן",
+      "לֵב",
+      "מַה", "מַס",
+      "נֵס",
+      "סַף", "סֵף",
+      "עַם", "עֵט",
+      "פַּח", "פֶּה",
+      "צַו", "צֵל",
+      "קַו", "קֵץ",
+      "רַב",
+      "שֵׁד",
+      "תַּם"
+    ];
 
-function rand(arr){ return arr[Math.floor(Math.random()*arr.length)] }
+    const fontFamilies = [
+      'Arial, "Noto Sans Hebrew", sans-serif',
+      '"Times New Roman", Georgia, serif',
+      'Tahoma, "Arial Hebrew", sans-serif',
+      'Verdana, Arial, sans-serif',
+      '"Courier New", monospace',
+      'Georgia, "Times New Roman", serif'
+    ];
 
-function gen(){
-  if(realMode){
-    wordEl.textContent = rand(realWords);
-    return;
-  }
-  let l1 = rand(letters);
-  let l2 = rand(letters);
-  if(finals[l2]) l2 = finals[l2];
-  wordEl.textContent = l1 + rand(niqqud) + l2;
-}
+    let realMode = false;
+    let fontIndex = 0;
 
-function speak(){
-  let u = new SpeechSynthesisUtterance(wordEl.textContent);
-  u.lang="he-IL";
-  speechSynthesis.cancel();
-  speechSynthesis.speak(u);
-}
+    const wordEl = document.getElementById("word");
+    const toggle = document.getElementById("toggle");
+    const fontButton = document.getElementById("fontButton");
+    const stage = document.querySelector(".stage");
 
-wordEl.onclick = (e)=>{ e.stopPropagation(); speak(); };
+    function rand(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
 
-stage.onclick = (e)=>{
-  if(e.target === toggle || toggle.contains(e.target)) return;
-  speak();
-};
+    function withNiqqud(letter, option) {
+      if (option.type === "shuruk") {
+        return "ו" + option.value;
+      }
+      const addDagesh = ["ב","כ","פ"].includes(letter) && Math.random() < 0.5;
+      return letter + (addDagesh ? "\u05BC" : "") + option.value;
+    }
 
-document.body.onclick = (e)=>{
-  if(stage.contains(e.target)) return;
-  gen();
-};
+    function generatePair() {
+      if (realMode) {
+        wordEl.textContent = rand(realWords);
+        return;
+      }
 
-toggle.onclick = (e)=>{
-  e.stopPropagation();
-  realMode = !realMode;
-  toggle.textContent = "מילים אמיתיות: " + (realMode ? "פועל":"כבוי");
-  gen();
-};
+      const option = rand(niqqudOptions);
+      const firstLetter = option.type === "shuruk" ? "ו" : rand(letters);
+      let secondLetter = rand(letters);
+      if (finals[secondLetter]) secondLetter = finals[secondLetter];
 
-window.onkeydown = (e)=>{
-  if(e.key==="Enter"){ speak(); return; }
-  gen();
-};
+      wordEl.textContent = withNiqqud(firstLetter, option) + secondLetter;
+    }
 
-gen();
-</script>
+    function speak() {
+      if (!("speechSynthesis" in window)) return;
+      const utterance = new SpeechSynthesisUtterance(wordEl.textContent);
+      utterance.lang = "he-IL";
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    }
 
+    function updateToggleLabel() {
+      toggle.textContent = "מילים אמיתיות: " + (realMode ? "פועל" : "כבוי");
+      toggle.setAttribute("aria-pressed", String(realMode));
+    }
+
+    function applyFont() {
+      wordEl.style.fontFamily = fontFamilies[fontIndex];
+      fontButton.title = "החלפת פונט (" + (fontIndex + 1) + "/" + fontFamilies.length + ")";
+      fontButton.setAttribute("aria-label", "החלפת פונט");
+    }
+
+    wordEl.addEventListener("click", (event) => {
+      event.stopPropagation();
+      speak();
+    });
+
+    stage.addEventListener("click", (event) => {
+      if (event.target === toggle || toggle.contains(event.target) ||
+          event.target === fontButton || fontButton.contains(event.target)) {
+        return;
+      }
+      speak();
+    });
+
+    document.body.addEventListener("click", (event) => {
+      if (stage.contains(event.target)) return;
+      generatePair();
+    });
+
+    toggle.addEventListener("click", (event) => {
+      event.stopPropagation();
+      realMode = !realMode;
+      updateToggleLabel();
+      generatePair();
+    });
+
+    fontButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      fontIndex = (fontIndex + 1) % fontFamilies.length;
+      applyFont();
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        speak();
+        return;
+      }
+      generatePair();
+    });
+
+    applyFont();
+    updateToggleLabel();
+    generatePair();
+  </script>
 </body>
 </html>
